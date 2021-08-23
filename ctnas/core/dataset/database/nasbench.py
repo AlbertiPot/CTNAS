@@ -16,10 +16,10 @@ class NASBenchDataBase(DataBase):
         archs = {}
         for raw_arch in raw_archs:
             arch = NASBenchArchitecture.from_dict(raw_arch)
-            archs[arch.hash_] = arch
+            archs[arch.hash_] = arch                                                    # archs存放 {hash : arch结构等信息} 键值对
         database = NASBenchDataBase()
         database.archs = archs
-        database.items = [v for k, v in archs.items()]
+        database.items = [v for k, v in archs.items()]                                  # items 仅仅存放了arch这个值，没有键，是个list
         database._sort()
         return database
 
@@ -29,7 +29,7 @@ class NASBenchDataBase(DataBase):
             sorted_items.append((hash_, arch.test_accuracy))
         sorted_items = sorted(sorted_items, key=lambda item: item[1], reverse=True)
         for i, (hash_, _) in enumerate(sorted_items, start=1):
-            self.archs[hash_].rank = i
+            self.archs[hash_].rank = i                                                  # 将排序的序号赋给每个键值对中值的部分
 
     def fetch_by_hash(self, arch_hash):
         return self.archs[arch_hash]

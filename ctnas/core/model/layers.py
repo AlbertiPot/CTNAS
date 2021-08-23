@@ -50,9 +50,9 @@ class GraphConvolution(nn.Module):
             self.bias.data.uniform_(-stdv, stdv)
 
     def forward(self, features, adj):
-        adj = adj + torch.eye(adj.size(-1), device=adj.device)
+        adj = adj + torch.eye(adj.size(-1), device=adj.device)              # 生成7*7的对角阵加到邻接矩阵上
         support = torch.matmul(features, self.weight)
-        output = torch.bmm(adj, support)
+        output = torch.bmm(adj, support)                                    # batch 矩阵乘：input（p,m,n) * mat2(p,n,a) ->output(p,m,a)
         if self.residual:
             output = output + features
         if self.bias is not None:

@@ -15,12 +15,12 @@ id2op = {v: k for k, v in op2id.items()}
 
 
 def nasbench_tensorize(arch: NASBenchArchitecture, batch=False, device="cpu"):
-    matrix = torch.from_numpy(arch.matrix).float().transpose(0, 1)
+    matrix = torch.from_numpy(arch.matrix).float().transpose(0, 1)                  # 转置，行和列交换，上三角阵变成了下三角阵
     n_ops = len(arch.ops)
     if n_ops < MAX_NODES:
         diff = MAX_NODES-n_ops
         ops = arch.ops + [DUMMY] * diff
-        matrix = F.pad(matrix, [0, diff, 0, diff])
+        matrix = F.pad(matrix, [0, diff, 0, diff])                                  # 将不足最大节点数的邻接矩阵补0
     else:
         ops = arch.ops
     ops = torch.tensor([op2id[item] for item in ops], dtype=torch.long)

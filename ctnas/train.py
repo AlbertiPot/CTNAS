@@ -14,7 +14,7 @@ from core.controller import NASBenchController, LargeSpaceController
 
 from core.engine.nac import train, evaluate
 from core.engine.policy_learning import train_controller
-from core.config import args
+from core.config import args                                # 直接导入已经解析完的args
 from core.utils import logger, set_reproducible
 from core.utils import device
 
@@ -31,9 +31,9 @@ if __name__ == "__main__":
     max_epochs = args.nac_epochs
 
     if args.space == "nasbench":
-        database = NASBenchDataBase.from_file(args.data)
-        dataset = NASBench(database=database, seed=args.seed)
-        trainset = CachedSubset(dataset, list(range(args.trainset_size)))
+        database = NASBenchDataBase.from_file(args.data)                                                                # database 负责读取数据
+        dataset = NASBench(database=database, seed=args.seed)                                                           # 做dataset
+        trainset = CachedSubset(dataset, list(range(args.trainset_size)))                                               # 分割trainset和valset，前423是训练集的大小，后面100个是验证集的大小
         valset = CachedSubset(dataset, list(range(args.trainset_size, args.trainset_size+args.valset_size, 1)))
     else:
         database = CommonNASDataBase.from_file(args.data)
@@ -49,7 +49,7 @@ if __name__ == "__main__":
     nac_optimizer = optim.Adam(nac.parameters(), lr=args.nac_lr, betas=(0.5, 0.999), weight_decay=5e-4)
 
     best_KTau = -1.0
-    for epoch in range(1, max_epochs+1):
+    for epoch in range(1, max_epochs+1):                                                                                # 先训练1000eps个NAC
         accuracy, loss = train(epoch=epoch, labeled_loader=train_loader, pseudo_set=None,
                                pseudo_ratio=args.pseudo_ratio,
                                nac=nac, criterion=criterion, optimizer=nac_optimizer)
@@ -79,7 +79,7 @@ if __name__ == "__main__":
                             op_tanh_reduce=args.controller_op_tanh_reduce, device=device).to(device=device)
     controller_optimizer = optim.Adam(controller.parameters(), args.controller_lr,
                                       betas=(0.5, 0.999), weight_decay=5e-4)
-    alternate_train = functools.partial(train, labeled_loader=train_loader,
+    alternate_train = functools.partial(train, labeled_loader=train_loader,                                         # partial返回一个部分对象，作用是将一个train函数和该函数所需的参数打包成一个部分对象，该对象被调用时等价于train带着这些参数被调用
                                         pseudo_ratio=args.pseudo_ratio,
                                         nac=nac, criterion=criterion, optimizer=nac_optimizer)
     alternate_evaluate = functools.partial(evaluate, loader=val_loader, nac=nac)

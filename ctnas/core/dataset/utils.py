@@ -17,7 +17,23 @@ class CachedSubset(data.Dataset):
         self.dataset = dataset
         self.indices = indices
 
-        self.cache = [self.dataset[i] for i in self.indices]
+        self.cache = [self.dataset[i] for i in self.indices]        
+        """
+        self.dataset[0] = (
+        tensor([[0., 0., 0., 0., 0., 0., 0.],
+        [1., 0., 0., 0., 0., 0., 0.],
+        [1., 1., 0., 0., 0., 0., 0.],
+        [0., 1., 0., 0., 0., 0., 0.],
+        [0., 0., 0., 1., 0., 0., 0.],
+        [1., 0., 0., 0., 1., 0., 0.],
+        [0., 0., 1., 0., 0., 1., 0.]]), 
+        
+        tensor([1, 2, 4, 2, 2, 3, 5]), 
+        0.9150974949200948,
+        0.9066840211550394
+        )     
+        
+        """
 
     def __getitem__(self, idx):
         return self.cache[idx]

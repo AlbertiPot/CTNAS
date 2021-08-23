@@ -29,7 +29,7 @@ def shuffle(*items):
     example, *_ = items
     batch_size, *_ = example.size()
     index = torch.randperm(batch_size, device=example.device)
-
+    
     return [item[index] for item in items]
 
 
@@ -42,11 +42,11 @@ def set_reproducible(seed=0):
     To ensure the reproducibility, refer to https://pytorch.org/docs/stable/notes/randomness.html.
     Note that completely reproducible results are not guaranteed.
     '''
-    random.seed(seed)
-    np.random.seed(seed)
-    torch.manual_seed(seed)
-    torch.backends.cudnn.deterministic = True
-    torch.backends.cudnn.benchmark = False
+    random.seed(seed)                           # python seed
+    np.random.seed(seed)                        # numpy seed
+    torch.manual_seed(seed)                     # torch seed for all devices(both CPU&CUDA)
+    torch.backends.cudnn.deterministic = True   # 跨程序运行时选用同一个conv
+    torch.backends.cudnn.benchmark = False      # cudnn中每次程序运行中多步调用卷积：跑一次benchmark挑最快的，这里保证不跑benchmarking，全部挑相同的卷积
 
 
 def get_logger(name: str, output_directory: str, log_name: str, debug: str) -> logging.Logger:
@@ -170,16 +170,18 @@ def batchify(items):
         return torch.stack(items, dim=0) 
     
 
-
+"""
+将arch0和arch1做笛卡尔积，生成len(arch0)*len(arch1)个pair，对其过一下nac输出100个好坏的概率
+"""
 def cartesian_traverse(arch0, arch1, ranker, up_triangular=False):
     m, n = len(arch0), len(arch1)
     outputs = []
     with torch.no_grad():
         for index in index_generate(m, n, up_triangular):
             i, j = transpose_l(index)
-            a = batchify(select(arch0, i))
-            b = batchify(select(arch1, j))
-            output = ranker(a, b)
+            a = batchify(select(arch0, i))                                      # a是一个bsize为100的邻接矩阵和算子编码的batch，其结构的index是[0*10,1*10,...,9*10]
+            b = batchify(select(arch1, j))                                      # b的结构与a相同，但是其index是[(0,1,3,4..,8,9)*10] ，即a和b凑成了笛卡尔积的结果对
+            output = ranker(a, b)                                               # 输出100个结构对比后的概率
             outputs.append(output)
     outputs = torch.cat(outputs, dim=0)
     if up_triangular:
