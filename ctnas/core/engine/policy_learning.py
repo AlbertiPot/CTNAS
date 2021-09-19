@@ -167,7 +167,7 @@ def train_controller(max_iter: int, database: DataBase,
 
 def generate_architecture_with_pseudo_labels(nac, controller, total, k):
     with torch.no_grad():
-        arch_seqs = [controller()[:-2] for _ in range(total)]                           # 用controler生成otal个结构
+        arch_seqs = [controller()[:-2] for _ in range(total)]                           # 用controler生成total个结构
         sample_archs = [seq2arch_fn(seq) for seq in arch_seqs]
         arch0 = [tensorize_fn(arch, device=device) for arch in sample_archs]            # tensor化和pad处理后的结构
 
@@ -198,7 +198,7 @@ def derive(iter_, controller: NASBenchController, nac: NAC, n_derive: int,
         location = random.choice(list(range(len(arch_tensor))))                         # 从[0-9]采样一个结构的location index
     else:
         outputs = cartesian_traverse(arch_tensor, arch_tensor, nac)                     # 对生成的10个网络，自己和自己做笛卡尔积生成100对结构对，用nac处理得到每个结构对好坏的概率作为输出
-        outputs.fill_diagonal_(0)                                                       # outputs = tensor[10,10],这一步将对角线清0，因为自己和自己比部分好坏
+        outputs.fill_diagonal_(0)                                                       # outputs = tensor[10,10],这一步将对角线清0，因为自己和自己比不分好坏
         max_p, location = outputs.sum(dim=1).max(dim=0, keepdim=True)                   # 求每一行的和的最大值及其对应的行数，即这一个结构比剩下九个好的概率最大
         max_p = max_p.view([]).item() / n_derive                                        # 除以10求平均
         location = location.view([]).item()
