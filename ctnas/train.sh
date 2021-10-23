@@ -5,4 +5,5 @@ train.py \
 --space nasbench \
 --data data/nas_bench.json \
 --train_batch_size 256 \
---output output/nasbench_search_${time}
+--output output/runtime_exp_seed22222222_${time} \
+--trainset_size 4236 --valset_size 1000 --seed 22222222

@@ -1,5 +1,6 @@
 import os
 import functools
+import time
 import torch
 import torch.nn as nn
 import torch.optim as optim
@@ -48,6 +49,7 @@ if __name__ == "__main__":
 
     nac_optimizer = optim.Adam(nac.parameters(), lr=args.nac_lr, betas=(0.5, 0.999), weight_decay=5e-4)
 
+    start = time.perf_counter()
     best_KTau = -1.0
     for epoch in range(1, max_epochs+1):                                                                                # 先训练1000eps个NAC
         accuracy, loss = train(epoch=epoch, labeled_loader=train_loader, pseudo_set=None,
@@ -71,6 +73,8 @@ if __name__ == "__main__":
             torch.save(state_dict, os.path.join(save_dir, f"nac-{epoch}.pth"))
     logger.info(f"Train NAC Complete, Best KTau={best_KTau:.4f}")
 
+    logger.info('train ranker using time {:.4f} seconds'.format(time.perf_counter()-start))
+
     # train controller
     Controller = NASBenchController if args.space == "nasbench" else LargeSpaceController
     controller = Controller(n_ops=args.n_ops, n_nodes=args.n_nodes,
@@ -86,3 +90,5 @@ if __name__ == "__main__":
     train_controller(max_iter=args.pl_iters, entropy_coeff=args.entropy_coeff, grad_clip=args.controller_grad_clip,
                      controller=controller, nac=nac, optimizer=controller_optimizer, writer=writer, database=database if args.space == "nasbench" else None,
                      alternate_train=alternate_train, alternate_evaluate=alternate_evaluate, search_space=args.space)
+
+    logger.info('train ranker and search using time {:.4f} seconds'.format(time.perf_counter()-start))
